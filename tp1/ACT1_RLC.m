@@ -30,7 +30,20 @@ fprintf('  Dr. Ing. Pucheta | Sistemas de Control II\n');
 fprintf('=====================================================\n\n');
 
 % ============================================================
-% PARAMETROS DEL CIRCUITO (Item 1 - Actividad Practica 1)
+% Item 1 - Actividad Practica 1
+% Metodología y explicacion de pasos:
+% 1- ASIGNO VALORES A PARAMETROS, las variables del sistema (RLC, V)
+% 2- CREO MATRICES que modelan sistemas (A, b, c)
+% 3- (EXTRA) VERIFICO ESTABILIDAD: calc autovalores de A para tener los polos de la FdT
+% 4- CONFIGURO SIMULACION: asigno vector de entrada U que cambia de signo cada 10ms, y seteo vector t de simulacion de 0 a 0.1s con paso 1e-5
+% 5- SIMULACION: para cada entrada de U, evaluo el vector de estados (X) usando integracion recursiva de euler X(k+1)= X(k) + dt * X_dot -> como X_dot solo depende de X y de U no hago asignacion en dos pasos sino en uno solo (ademas uso condiciones iniciales nulas)
+% 6- CALCULO SALIDA Y usando matriz c' y vector de estados X (en este caso mi salida es voltaje de la resistencia v_r)
+% 7- GRAFICO: tomo valores de las variables de interes y grafico con vector de simulacion t
+% ============================================================
+
+
+% ============================================================
+% 1- ASIGNO VALORES A PARAMETROS, las variables del sistema (RLC, V)
 % ============================================================
 R       = 2200;      % Resistencia [Ohm] - 2.2 kOhm
 L       = 500e-3;    % Inductancia [H]   - 500 mHy
@@ -45,7 +58,7 @@ fprintf('  C = %.1f uF\n', C*1e6);
 fprintf('  Entrada: +/-%.1f V, cambia signo cada %.0f ms\n\n', V_amp, T_signo*1e3);
 
 % ============================================================
-% MATRICES DEL SISTEMA EN ESPACIO DE ESTADOS
+% 2- CREO MATRICES que modelan sistemas (A, b, c)
 % ============================================================
 A = [-R/L,  -1/L;
       1/C,   0  ];
@@ -64,7 +77,7 @@ fprintf('Vector de salida c^T:\n');
 disp(c');
 
 % ============================================================
-% ANALISIS: AUTOVALORES
+% 3- (EXTRA) VERIFICO ESTABILIDAD: calc autovalores de A para tener los polos de la FdT
 % ============================================================
 autovalores = eig(A);
 fprintf('Autovalores del sistema:\n');
@@ -78,7 +91,7 @@ else
 end
 
 % ============================================================
-% CONFIGURACION DE LA SIMULACION
+% 4- CONFIGURO SIMULACION: asigno vector de entrada U que cambia de signo cada 10ms, y seteo vector t de simulacion de 0 a 0.1s con paso 1e-5
 % ============================================================
 dt    = 1e-5;      % Paso de integracion [s]
 t_fin = 0.10;      % Tiempo total [s]
@@ -97,7 +110,7 @@ for k = 1:N
 end
 
 % ============================================================
-% SIMULACION A - CONDICIONES INICIALES NULAS
+% 5- SIMULACION: para cada entrada de U, evaluo el vector de estados (X) usando integracion recursiva de euler X(k+1)= X(k) + dt * X_dot -> como X_dot solo depende de X y de U no hago asignacion en dos pasos sino en uno solo (ademas uso condiciones iniciales nulas)
 % ============================================================
 fprintf('Simulando con condiciones iniciales NULAS...\n');
 x0 = [0; 0];       % i(0) = 0 A,  v_c(0) = 0 V
@@ -109,27 +122,16 @@ for k = 1:N-1
   x(:,k+1) = x(:,k) + dt * (A * x(:,k) + b * u_hist(k));
 end
 
+% ============================================================
+% 6- CALCULO SALIDA Y usando matriz c' y vector de estados X (en este caso mi salida es voltaje de la resistencia v_r)
+% ============================================================
+
 i_t  = x(1,:);      % Corriente [A]
 vc_t = x(2,:);      % Tension en capacitor [V]
 vr_t = c' * x;      % Salida: tension en resistor [V]  (= R*i)
 
 % ============================================================
-% SIMULACION B - CONDICIONES INICIALES NO NULAS
-% ============================================================
-fprintf('Simulando con condiciones iniciales NO NULAS...\n\n');
-x0_nn = [1e-3; 5.0];   % i(0) = 1 mA,  v_c(0) = 5 V
-
-x_nn = zeros(2, N);
-x_nn(:,1) = x0_nn;
-
-for k = 1:N-1
-  x_nn(:,k+1) = x_nn(:,k) + dt * (A * x_nn(:,k) + b * u_hist(k));
-end
-
-vr_nn = c' * x_nn;
-
-% ============================================================
-% FIGURA 1 - CI NULAS: las 4 variables
+% 7- GRAFICO: tomo valores de las variables de interes y grafico con vector de simulacion t
 % ============================================================
 figure(1);
 t_ms = t * 1e3;   % tiempo en ms para graficos
@@ -158,44 +160,5 @@ xlabel('Tiempo [ms]');
 grid on;
 
 % ============================================================
-% FIGURA 2 - COMPARACION CI nulas vs no nulas
-% ============================================================
-figure(2);
-
-subplot(3,1,1);
-plot(t_ms, i_t*1e3, 'b', 'LineWidth', 1.4); hold on;
-plot(t_ms, x_nn(1,:)*1e3, 'b--', 'LineWidth', 1.4);
-legend('CI nulas [i_0=0, v_{c0}=0]', 'CI no nulas [i_0=1mA, v_{c0}=5V]', 'Location','best');
-ylabel('i(t) [mA]');
-title('Comparacion: CI nulas vs CI no nulas');
-grid on;
-
-subplot(3,1,2);
-plot(t_ms, vc_t, 'r', 'LineWidth', 1.4); hold on;
-plot(t_ms, x_nn(2,:), 'r--', 'LineWidth', 1.4);
-legend('CI nulas', 'CI no nulas', 'Location','best');
-ylabel('v_c(t) [V]');
-grid on;
-
-subplot(3,1,3);
-plot(t_ms, vr_t, 'm', 'LineWidth', 1.4); hold on;
-plot(t_ms, vr_nn, 'm--', 'LineWidth', 1.4);
-legend('CI nulas', 'CI no nulas', 'Location','best');
-ylabel('v_r(t) [V]');
-xlabel('Tiempo [ms]');
-grid on;
-
-% ============================================================
 % RESUMEN EN CONSOLA
 % ============================================================
-fprintf('RESULTADOS:\n');
-fprintf('  i_max  (CI nulas)  = %.4f mA\n', max(abs(i_t))*1e3);
-fprintf('  vc_max (CI nulas)  = %.4f V\n',  max(abs(vc_t)));
-fprintf('  vr_max (CI nulas)  = %.4f V\n',  max(abs(vr_t)));
-fprintf('\n  i_max  (CI no nulas) = %.4f mA\n', max(abs(x_nn(1,:)))*1e3);
-fprintf('  vc_max (CI no nulas) = %.4f V\n',  max(abs(x_nn(2,:))));
-fprintf('  vr_max (CI no nulas) = %.4f V\n',  max(abs(vr_nn)));
-
-fprintf('\n=====================================================\n');
-fprintf('  Simulacion completada exitosamente.\n');
-fprintf('=====================================================\n');
