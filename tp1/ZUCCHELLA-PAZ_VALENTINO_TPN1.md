@@ -12,7 +12,7 @@ Se definieron los parámetros del sistema según la consigna y constuyó el mode
 
 Se logró la consigna propuesta.
 
-![Resultados1](Curvas_RLC_Item1.png)
+![Resultados1](images/Curvas_RLC_Item1.png)
 
 ---
 
@@ -28,7 +28,7 @@ A partir de los datos medidos, se utilizó la tensión en el capacitor como sali
 
 Se logró la consigna propuesta.
 
-![Resultados2](Curvas_RLC_Item2_Vc.png)
+![Resultados2](images/Curvas_RLC_Item2_Vc.png)
 
 ---
 
@@ -44,7 +44,7 @@ Se utilizó el modelo en variables de estado obtenido con los parámetros identi
 
 Se logró la consigna propuesta.
 
-![Resultados3](Curvas_RLC_Item3.png)
+![Resultados3](images/Curvas_RLC_Item3.png)
 
 ---
 
@@ -60,7 +60,7 @@ Se modeló el motor de corriente continua considerando sus ecuaciones eléctrica
 
 Se logró la consigna propuesta.
 
-![Resultados4](item4.png)
+![Resultados4](images/item4.png)
 
 ---
 
@@ -76,7 +76,7 @@ Se utilizó el modelo dinámico completo del motor, incorporando tanto la entrad
 
 Se logró la consigna propuesta.
 
-![Resultados5](item5.jpeg)
+![Resultados5](images/item5.jpeg)
 
 ---
 

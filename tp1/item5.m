@@ -175,20 +175,79 @@ wr_por_TL  = lsim(G_Wr_Tl,  TL_signal,  t);
 wr_por_TL_z = lsim(G_Wr_Tl_z,  TL_signal,  t);
 
 % Superposicion
-wr_total = wr_por_Va + wr_por_TL;
-wr_total_z = wr_por_Va_z + wr_por_TL_z;
+wr_total = wr_por_Va + wr_por_TL_z;
+% wr_total_z = wr_por_Va_z + wr_por_TL_z; % elijo usar solo el cero en TL y no en Va
+
 
 % Comparar contra datos reales
 figure;
 plot(t, wr,        'b',   'LineWidth', 1.4); hold on;
-plot(t, wr_total,  '--r', 'LineWidth', 1.4);
-plot(t, wr_total_z,  '--g', 'LineWidth', 1.4);
-legend('\omega_r medido', '\omega_r modelo completo', '\omega_r modelo completo con cero');
+plot(t, wr_total ,  '--g', 'LineWidth', 1.4);
+legend('\omega_r medido', '\omega_r modelo completo');
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
 title('Dinamica completa de Wr ante Vin y TL');
 grid on;
-% analizando grafico veo que cero de Wr/Va es prescindible pero el cero de Wr/Tl si cambia la dinamica y la acerca mas a las mediciones
 
 
 % FALTA FINAL FINAL: deducir valores de R, L, J, B, Ki, Km
+% analizando grafico veo que cero de Wr/Va es prescindible pero el cero de Wr/Tl si cambia la dinamica y la acerca mas a las mediciones, esto concuerda con el analisis de las funciones de transferencia a partir de las ecuaciones:
+% Wr/Vin (s)= Ki / [(Ls+R)(Js+B)+Ki*Km] = Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
+% Wr/TL (s)= -Ki*(L s+R) / [(Ls+R)(Js+B)+Ki*Km] = -(L s+R)Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
+
+% si elijo Wr_Vin sin cero y Wr_Tl con cero, puedo comparar numeradores y denominadores:
+% Wr_Vin = K_wr / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
+% Wr_Vin = K_tl*(T3 s+1) / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
+
+% MAL, NO ANDA, NO RESPONDE BIEN A TL -> tengo dos fdt distintas cuando deben tener el mismo denominador (2 chen distintos)
+% uso 0 de chen de TL y denominador de Vin -> TMP ANDA
+
+[num_wr_vin, den_wr_vin] = tfdata(G_Wr_Vin, 'v')
+[num_wr_tl, den_wr_tl] = tfdata(G_Wr_Tl_z, 'v') 
+
+Ki=num_wr_vin(3)
+Ra=(num_wr_tl(3))/(-Ki)
+Laa=(num_wr_tl(2))/(-Ki)
+
+% ahora comparo denominadores para obtener J, Bm, Km
+J=den_wr_vin(1)/Laa
+Bm=(den_wr_vin(2)-J*Ra)/Laa
+Km=(den_wr_vin(3)-Ra*Bm)/Ki
+
+
+% armo matriz para diagrama de estados con
+% x [ ia; wr; theta ]
+A = [-Ra/Laa,  -Km/Laa,  0;
+      Ki/J,    -Bm/J,    0;
+      0,        1,       0];
+
+B = [1/Laa; 0; 0];
+E = [0; -1/J; 0];
+D = [0]
+C=[0 1 0]
+
+% uso perturbacion como entrada para poder simular
+B_aug = [B E];   % 2 entradas: Va y TL
+D_aug = [0 0];   % salida no depende directo de entradas
+sys = ss(A, B_aug, C, D_aug);
+
+% armo entrada con escalones
+Va = zeros(size(t));
+Va(t >= 2.68) = 10;
+TL = zeros(size(t));
+TL(t >= 18.68 & t <= 26.67) = 20;
+U = [Va TL];
+
+wr_sim_datos_chen = lsim(sys, U, t);
+figure;
+plot(t, wr, 'k', 'LineWidth', 1.5); hold on;
+plot(t, wr_sim_datos_chen, '--r', 'LineWidth', 2);
+plot(t, TL, '--y', 'LineWidth', 2);
+plot(t, Va, '--g', 'LineWidth', 2);
+
+legend('Medido', 'Modelo físico', "TL", "Va");
+xlabel('Tiempo [s]');
+ylabel('\omega_r [rad/s]');
+grid on;
+
+

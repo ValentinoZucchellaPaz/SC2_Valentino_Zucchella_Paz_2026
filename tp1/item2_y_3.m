@@ -54,9 +54,9 @@ dt  = diff(t(idx));
 i_mid = i(idx(1:end-1));
 
 C_vals = (i_mid .* dt) ./ dVc;
-C = mean(C_vals);
-L=den(1)/C
-R=den(2)/C
+C = mean(C_vals) % 2.2025e-04
+L=den(1)/C % 0.9988
+R=den(2)/C % 219.75
 
 % validacion con sistema de estados
 A = [-R/L   -1/L;

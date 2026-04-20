@@ -92,7 +92,7 @@ idx_stall = find(wr_vec <= 0 & t_vec > 0.01, 1);
 
 fprintf('Motor detenido en t = %.4f s\n',   t_vec(idx_stall));
 fprintf('TL_stall            = %.4e N·m\n', TL_vec(idx_stall));
-fprintf('ia en stall         = %.4f A\n',   ia_vec(idx_stall));
+fprintf('ia en stall         = %.4f A\n',   ia_vec(idx_stall)); % 0.2158 A
 
 % ============================================================
 % GRAFICOS
