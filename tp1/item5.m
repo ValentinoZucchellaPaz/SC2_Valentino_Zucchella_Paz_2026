@@ -72,8 +72,8 @@ beta_Wr = (k1+a2_wr)/(a1_wr - a2_wr)
 T3_wr = beta_Wr*(T1_wr-T2_wr)+T1_wr
 
 % Obtengo funcion de tranferencia de modelo
-G_Wr_Vin = tf([0 T3_wr 1], [T1_wr*T2_wr T1_wr+T2_wr 1])*K_wr
-% G_Wr_Vin = tf([0 0 1], [T1_wr*T2_wr T1_wr+T2_wr 1])*K_wr
+G_Wr_Vin = tf([0 0 1], [T1_wr*T2_wr T1_wr+T2_wr 1])*K_wr
+G_Wr_Vin_z = tf([0 T3_wr 1], [T1_wr*T2_wr T1_wr+T2_wr 1])*K_wr
 
 
 % simulo para escalon 10V
@@ -83,13 +83,15 @@ Vin_sim = zeros(length(t_sim), 1);
 Vin_sim(t_sim >= t0_va) = 10;
 
 wr_sim = lsim(G_Wr_Vin, Vin_sim, t_sim);
+wr_sim_z = lsim(G_Wr_Vin_z, Vin_sim, t_sim);
 
 % Grafico y comparo
 figure;
 plot(t_sim, interp1(t, wr, t_sim), 'b', 'LineWidth', 1.4); hold on;
 plot(t_sim, wr_sim, '--r', 'LineWidth', 1.4);
-plot(t_sim, Vin_sim, '--g', 'LineWidth', 1.4);
-legend('Wr modelo Chen', 'Wr medido', "Vin");
+plot(t_sim, wr_sim_z, '-.g', 'LineWidth', 1.4); hold on;
+plot(t_sim, Vin_sim, ':k', 'LineWidth', 1.4);
+legend('Wr medido', 'Wr modelo Chen', 'Wr modelo Chen con cero', "Vin");
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
 title('Dinamica de Wr ante escalon Vin=10V');
@@ -132,24 +134,28 @@ beta_tl = (k1_tl+a2_tl)/(a1_tl - a2_tl)
 T3_tl = beta_tl*(T1_tl-T2_tl)+T1_tl
 
 % Obtengo funcion de tranferencia de modelo
-G_Wr_Tl = tf([0 T3_tl 1], [T1_tl*T2_tl T1_tl+T2_tl 1])*K_tl
+G_Wr_Tl = tf([0 0 1], [T1_tl*T2_tl T1_tl+T2_tl 1])*K_tl
+G_Wr_Tl_z = tf([0 T3_tl 1], [T1_tl*T2_tl T1_tl+T2_tl 1])*K_tl
 
 % Aislar tramo de la perturbacion
-mask = (t >= t0_tl) & (t <= 26.67);
+mask = (t >= t0_tl-2) & (t <= 35);
 t_tl    = t(mask) - t0_tl;    % tiempo relativo al inicio del escalon
 wr_tl   = wr(mask);           % wr medido en ese tramo
 
 % Señal incremental de TL en ese tramo
-TL_inc = 20 * ones(size(t_tl));
+TL_inc = zeros(size(t_tl));
+TL_inc(t_tl >= 0 & t_tl <= (26.67-t0_tl)) = 20;
 
 % lsim sobre el tramo aislado
 wr_tl_sim = lsim(G_Wr_Tl, TL_inc, t_tl);
+wr_tl_sim_z = lsim(G_Wr_Tl_z, TL_inc, t_tl);
 
 % Comparar
 figure;
 plot(t_tl, wr_tl - wr_ss, 'b', 'LineWidth', 1.4); hold on;
 plot(t_tl, wr_tl_sim,  '--r', 'LineWidth', 1.4);
-legend('wr incremental medido', 'wr modelo Chen');
+plot(t_tl, wr_tl_sim_z,  '--g', 'LineWidth', 1.4);
+legend('wr incremental medido', 'wr modelo Chen', 'wr modelo Chen con cero');
 xlabel('Tiempo relativo al escalon [s]');
 ylabel('\Delta\omega_r [rad/s]');
 title('Dinamica de Wr ante perturbacion TL=20V');
@@ -164,21 +170,25 @@ TL_signal(t >= t0_tl & t < 26.67) = 20;   % escalon que se corta
 
 % lsim de cada canal por separado
 wr_por_Va  = lsim(G_Wr_Vin, Va_signal,  t);
+wr_por_Va_z  = lsim(G_Wr_Vin_z, Va_signal,  t);
 wr_por_TL  = lsim(G_Wr_Tl,  TL_signal,  t);
+wr_por_TL_z = lsim(G_Wr_Tl_z,  TL_signal,  t);
 
 % Superposicion
 wr_total = wr_por_Va + wr_por_TL;
+wr_total_z = wr_por_Va_z + wr_por_TL_z;
 
 % Comparar contra datos reales
 figure;
 plot(t, wr,        'b',   'LineWidth', 1.4); hold on;
 plot(t, wr_total,  '--r', 'LineWidth', 1.4);
-legend('\omega_r medido', '\omega_r modelo completo');
+plot(t, wr_total_z,  '--g', 'LineWidth', 1.4);
+legend('\omega_r medido', '\omega_r modelo completo', '\omega_r modelo completo con cero');
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
 title('Dinamica completa de Wr ante Vin y TL');
 grid on;
-
+% analizando grafico veo que cero de Wr/Va es prescindible pero el cero de Wr/Tl si cambia la dinamica y la acerca mas a las mediciones
 
 
 % FALTA FINAL FINAL: deducir valores de R, L, J, B, Ki, Km
