@@ -48,6 +48,38 @@ Se logró la consigna propuesta.
 
 ---
 
+# Ítem 4
+
+**Consigna:**
+Analizar la dinámica de un motor de corriente continua ante una entrada de tensión constante y una carga mecánica variable.
+
+**Implementación:**
+Se modeló el motor de corriente continua considerando sus ecuaciones eléctricas y mecánicas, incluyendo la influencia del par de carga. Se aplicó una tensión constante de entrada y se definió un par de carga creciente lineal en el tiempo. A partir de este modelo se simularon las variables de interés: corriente de armadura, velocidad angular y par de carga. Se analizaron las condiciones de operación del sistema y se identificó el punto en el cual el motor alcanza su límite de funcionamiento.
+
+**Resultados:**
+
+Se logró la consigna propuesta.
+
+![Resultados4](item4.png)
+
+---
+
+# Ítem 5
+
+**Consigna:**
+Validar el modelo completo del motor comparando la respuesta simulada con datos medidos.
+
+**Implementación:**
+Se utilizó el modelo dinámico completo del motor, incorporando tanto la entrada de tensión como la variación del par de carga. Se simuló la evolución temporal de la velocidad angular y se comparó con los datos medidos del sistema real. La validación se realizó mediante la superposición de ambas señales, evaluando la correspondencia en régimen transitorio y estacionario.
+
+**Resultados:**
+
+Se logró la consigna propuesta.
+
+![Resultados5](item5.jpeg)
+
+---
+
 # Conclusión
 
 El modelado en variables de estado y su implementación en herramientas computacionales permitió representar adecuadamente la dinámica de un sistema físico. A partir de datos experimentales, se logró identificar un modelo equivalente mediante el método de la respuesta al escalón y validar su comportamiento utilizando una variable distinta y en un intervalo temporal diferente, verificando la coherencia entre el modelo y el sistema real.
