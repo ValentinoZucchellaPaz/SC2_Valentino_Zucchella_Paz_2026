@@ -56,7 +56,7 @@ y_inf = wr(end) % no lo afecta la perturbacion aqui, ya volvio al regimen
 K_wr = y_inf/Ein
 
 %calculo de k1,k2 y k3
-k1 = (y_1/(K_wr*Ein)) - 1 % si hago -1 me da polos complejos conjugados
+k1 = (y_1/(K_wr*Ein)) - 1
 k2 = (y_2/(K_wr*Ein)) - 1
 k3 = (y_3/(K_wr*Ein)) - 1
 
@@ -161,7 +161,6 @@ ylabel('\Delta\omega_r [rad/s]');
 title('Dinamica de Wr ante perturbacion TL=20V');
 grid on;
 
-
 % FINAL: JUNTO AMBAS FDT
 % Señales completas desde t=0
 Va_signal  = Vin;                        % entrada de tension del excel
@@ -188,31 +187,100 @@ xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
 title('Dinamica completa de Wr ante Vin y TL');
 grid on;
-
-
-% FALTA FINAL FINAL: deducir valores de R, L, J, B, Ki, Km
 % analizando grafico veo que cero de Wr/Va es prescindible pero el cero de Wr/Tl si cambia la dinamica y la acerca mas a las mediciones, esto concuerda con el analisis de las funciones de transferencia a partir de las ecuaciones:
 % Wr/Vin (s)= Ki / [(Ls+R)(Js+B)+Ki*Km] = Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
 % Wr/TL (s)= -Ki*(L s+R) / [(Ls+R)(Js+B)+Ki*Km] = -(L s+R)Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
+
+
+% FALTA FINAL FINAL: deducir valores de R, L, J, B, Ki, Km => necesito la FdT de I_a/Vin
+% I_a/Vin= (J s + Bm) / [(Ls+R)(Js+B)+Ki*Km] = (J s + Bm) / [(L*J) s^2 + (L*Bm + J*R) s + (R*Bm+Km*Ki)]
+% Metodo de Chen
+t0_ia = 2.68; % delay de escalon
+t1_ia_paso = 0.3; % espacio entre puntos
+
+% puntos que describen dinamica
+t1_ia = t0_va + 1*t1_ia_paso
+t2_ia = t0_va + 2*t1_ia_paso
+t3_ia = t0_va + 3*t1_ia_paso
+
+% busco y(ti_ia)
+y_1_ia = interp1(t,ia,t1_ia)
+y_2_ia = interp1(t,ia,t2_ia)
+y_3_ia = interp1(t,ia,t3_ia)
+
+% Ganancia y valor de regimen
+y_inf_ia = ia(end) % no lo afecta la perturbacion aqui, ya volvio al regimen
+K_ia  = y_inf_ia/Ein
+
+%calculo de k1,k2 y k3
+k1_ia = (y_1_ia/y_inf_ia) - 1
+k2_ia = (y_2_ia/y_inf_ia) - 1
+k3_ia = (y_3_ia/y_inf_ia) - 1
+
+%calculo de a1, a2 b y beta
+b_ia  = 4*k1_ia^3*k3_ia - 3*k1_ia^2*k2_ia^2 - 4*k2_ia^3 + k3_ia^2 + 6*k1_ia*k2_ia*k3_ia
+a_ia  = k1_ia^2 + k2_ia
+
+a1_ia = (k1_ia*k2_ia + k3_ia - sqrt(b_wr)) / (2*a_ia)
+a2_ia = (k1_ia*k2_ia + k3_ia + sqrt(b_wr)) / (2*a_ia)
+T1_ia = -t1_ia_paso/log(a1_ia)
+T2_ia = -t1_ia_paso/log(a2_ia)
+beta_ia = (k1_ia+a2_ia)/(a1_ia - a2_ia)
+T3_ia = beta_ia*(T1_ia-T2_ia)+T1_ia
+
+
+% Obtengo funcion de tranferencia de modelo
+G_Ia_Vin_z = tf([0 T3_ia 1], [T1_ia*T2_ia T1_ia+T2_ia 1])*K_ia
+
+
+% simulo para escalon 10V
+% idx_15s = t <= 15;
+% t_sim = t(idx_15s);
+% Vin_sim = zeros(length(t_sim), 1);
+% Vin_sim(t_sim >= t0_va) = 10;
+
+ia_sim_z = lsim(G_Ia_Vin_z, Vin_sim, t_sim);
+
+% Grafico y comparo
+figure;
+plot(t_sim, interp1(t, ia, t_sim), 'b', 'LineWidth', 1.4); hold on;
+plot(t_sim, ia_sim_z, '-.g', 'LineWidth', 1.4); hold on;
+plot(t_sim, Vin_sim, ':k', 'LineWidth', 1.4);
+plot(t1_ia, y_1_ia, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+plot(t2_ia, y_2_ia, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+plot(t3_ia, y_3_ia, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+legend('Ia medido', 'Ia modelo Chen con cero', "Vin");
+xlabel('Tiempo [s]');
+ylabel('\omega_r [rad/s]');
+title('Dinamica de Wr ante escalon Vin=10V');
+grid on;
+
 
 % si elijo Wr_Vin sin cero y Wr_Tl con cero, puedo comparar numeradores y denominadores:
 % Wr_Vin = K_wr / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
 % Wr_Vin = K_tl*(T3 s+1) / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
 
+% Wr/Vin (s)= Ki / [(Ls+R)(Js+B)+Ki*Km] = Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
+% I_a/Vin= (J s + Bm) / [(Ls+R)(Js+B)+Ki*Km] = (J s + Bm) / [(L*J) s^2 + (L*Bm + J*R) s + (R*Bm+Km*Ki)]
+
 % MAL, NO ANDA, NO RESPONDE BIEN A TL -> tengo dos fdt distintas cuando deben tener el mismo denominador (2 chen distintos)
 % uso 0 de chen de TL y denominador de Vin -> TMP ANDA
 
-[num_wr_vin, den_wr_vin] = tfdata(G_Wr_Vin, 'v')
 [num_wr_tl, den_wr_tl] = tfdata(G_Wr_Tl_z, 'v') 
+[num_wr_vin, den_wr_vin] = tfdata(G_Wr_Vin, 'v')
+[num_ia_vin, den_ia_vin] = tfdata(G_Ia_Vin_z, 'v') 
 
 Ki=num_wr_vin(3)
-Ra=(num_wr_tl(3))/(-Ki)
-Laa=(num_wr_tl(2))/(-Ki)
+J=num_ia_vin(2)
+Bm=num_ia_vin(3)
+Laa=den_ia_vin(1)/J
+Ra=(den_ia_vin(2)-Bm*Laa)/J
+Km=(den_ia_vin(3)-Ra*Bm)/Ki
+
+% Ra=(num_wr_tl(3))/(-Ki)
+% Laa=(num_wr_tl(2))/(-Ki)
 
 % ahora comparo denominadores para obtener J, Bm, Km
-J=den_wr_vin(1)/Laa
-Bm=(den_wr_vin(2)-J*Ra)/Laa
-Km=(den_wr_vin(3)-Ra*Bm)/Ki
 
 
 % armo matriz para diagrama de estados con
@@ -249,5 +317,3 @@ legend('Medido', 'Modelo físico', "TL", "Va");
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
 grid on;
-
-
