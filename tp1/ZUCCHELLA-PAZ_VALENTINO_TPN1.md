@@ -74,9 +74,10 @@ Se utilizó el modelo dinámico completo del motor, incorporando tanto la entrad
 
 **Resultados:**
 
-Se logró la consigna propuesta.
+Se logró la consigna propuesta. Tanto para Wr calculado con las dinamicas (Chen), como también en variable de estado calculando los parametros del motor con las dinamicas.
 
-![Resultados5](images/item5.jpeg)
+![Resultados5.1](images/item5_chen.png)
+![Resultados5.2](images/item5_params.png)
 
 ---
 

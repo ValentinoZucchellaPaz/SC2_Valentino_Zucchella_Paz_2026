@@ -83,15 +83,13 @@ Vin_sim = zeros(length(t_sim), 1);
 Vin_sim(t_sim >= t0_va) = 10;
 
 wr_sim = lsim(G_Wr_Vin, Vin_sim, t_sim);
-wr_sim_z = lsim(G_Wr_Vin_z, Vin_sim, t_sim);
 
 % Grafico y comparo
 figure;
 plot(t_sim, interp1(t, wr, t_sim), 'b', 'LineWidth', 1.4); hold on;
 plot(t_sim, wr_sim, '--r', 'LineWidth', 1.4);
-plot(t_sim, wr_sim_z, '-.g', 'LineWidth', 1.4); hold on;
 plot(t_sim, Vin_sim, ':k', 'LineWidth', 1.4);
-legend('Wr medido', 'Wr modelo Chen', 'Wr modelo Chen con cero', "Vin");
+legend('Wr medido', 'Wr modelo Chen', "Vin");
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
 title('Dinamica de Wr ante escalon Vin=10V');
@@ -104,7 +102,7 @@ grid on;
 
 % aplico Chen
 t0_tl = 18.67; % delay en el que comienza escalon
-t1_tl = 0.3; % espacio entre puntos
+t1_tl = 0.6; % espacio entre puntos
 
 t1_wr_tl = t0_tl + 1 * t1_tl;
 t2_wr_tl = t0_tl + 2 * t1_tl;
@@ -169,27 +167,27 @@ TL_signal(t >= t0_tl & t < 26.67) = 20;   % escalon que se corta
 
 % lsim de cada canal por separado
 wr_por_Va  = lsim(G_Wr_Vin, Va_signal,  t);
-wr_por_Va_z  = lsim(G_Wr_Vin_z, Va_signal,  t);
-wr_por_TL  = lsim(G_Wr_Tl,  TL_signal,  t);
 wr_por_TL_z = lsim(G_Wr_Tl_z,  TL_signal,  t);
 
 % Superposicion
 wr_total = wr_por_Va + wr_por_TL_z;
-% wr_total_z = wr_por_Va_z + wr_por_TL_z; % elijo usar solo el cero en TL y no en Va
 
 
 % Comparar contra datos reales
 figure;
 plot(t, wr,        'b',   'LineWidth', 1.4); hold on;
 plot(t, wr_total ,  '--g', 'LineWidth', 1.4);
+plot(t1_wr, y_1, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+plot(t2_wr, y_2, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+plot(t3_wr, y_3, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+plot(t1_wr_tl, y_tl_1+wr_ss, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+plot(t2_wr_tl, y_tl_2+wr_ss, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
+plot(t3_wr_tl, y_tl_3+wr_ss, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
 legend('\omega_r medido', '\omega_r modelo completo');
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
 title('Dinamica completa de Wr ante Vin y TL');
 grid on;
-% analizando grafico veo que cero de Wr/Va es prescindible pero el cero de Wr/Tl si cambia la dinamica y la acerca mas a las mediciones, esto concuerda con el analisis de las funciones de transferencia a partir de las ecuaciones:
-% Wr/Vin (s)= Ki / [(Ls+R)(Js+B)+Ki*Km] = Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
-% Wr/TL (s)= -Ki*(L s+R) / [(Ls+R)(Js+B)+Ki*Km] = -(L s+R)Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
 
 
 % FALTA FINAL FINAL: deducir valores de R, L, J, B, Ki, Km => necesito la FdT de I_a/Vin
@@ -197,6 +195,7 @@ grid on;
 % Metodo de Chen
 t0_ia = 2.68; % delay de escalon
 t1_ia_paso = 0.3; % espacio entre puntos
+% t1_ia_paso a 0.2 mejora Ia/Vin pero empeora respuesta Wr con parametros calculados con Ia/Vin
 
 % puntos que describen dinamica
 t1_ia = t0_va + 1*t1_ia_paso
@@ -252,19 +251,21 @@ plot(t3_ia, y_3_ia, 'ko', 'LineWidth', 2, 'MarkerSize', 6);
 legend('Ia medido', 'Ia modelo Chen con cero', "Vin");
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
-title('Dinamica de Wr ante escalon Vin=10V');
+title('Dinamica de Ia ante escalon Vin=10V');
 grid on;
 
 
-% si elijo Wr_Vin sin cero y Wr_Tl con cero, puedo comparar numeradores y denominadores:
+% si elijo Wr_Vin sin cero y Ia_Vin con cero, puedo comparar numeradores y denominadores:
 % Wr_Vin = K_wr / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
-% Wr_Vin = K_tl*(T3 s+1) / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
+% Ia_Vin = K_tl*(T3 s+1) / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
+% Wr_Tl = K_tl*(T3 s+1) / [(T1_wr*T2_wr) s^2 + (T1_wr+T2_wr) s + 1]
 
 % Wr/Vin (s)= Ki / [(Ls+R)(Js+B)+Ki*Km] = Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
+% Wr/TL (s)= -Ki*(L s+R) / [(Ls+R)(Js+B)+Ki*Km] = -(L s+R)Ki / [(L*J) s^2 + (L * B + J * R) s + (R*B+KmKi)]
 % I_a/Vin= (J s + Bm) / [(Ls+R)(Js+B)+Ki*Km] = (J s + Bm) / [(L*J) s^2 + (L*Bm + J*R) s + (R*Bm+Km*Ki)]
 
-% MAL, NO ANDA, NO RESPONDE BIEN A TL -> tengo dos fdt distintas cuando deben tener el mismo denominador (2 chen distintos)
-% uso 0 de chen de TL y denominador de Vin -> TMP ANDA
+% fdt's tienen distinto den cuando deben tener el mismo para comparar con el despeje teorico 
+% uso 0 de chen de Ia/Vin y denominador de Wr/Vin -> EXITO
 
 [num_wr_tl, den_wr_tl] = tfdata(G_Wr_Tl_z, 'v') 
 [num_wr_vin, den_wr_vin] = tfdata(G_Wr_Vin, 'v')
@@ -273,12 +274,17 @@ grid on;
 Ki=num_wr_vin(3)
 J=num_ia_vin(2)
 Bm=num_ia_vin(3)
-Laa=den_ia_vin(1)/J
-Ra=(den_ia_vin(2)-Bm*Laa)/J
-Km=(den_ia_vin(3)-Ra*Bm)/Ki
+Laa=den_wr_vin(1)/J
+Ra=(den_wr_vin(2)-Bm*Laa)/J
+Km=(den_wr_vin(3)-Ra*Bm)/Ki
 
+
+% no da buena respuesta
 % Ra=(num_wr_tl(3))/(-Ki)
 % Laa=(num_wr_tl(2))/(-Ki)
+% J=den_wr_vin(1)/Laa
+% Bm=(den_wr_vin(2)-J*Ra)/Laa
+% Km=(den_wr_vin(3)-Ra*Bm)/Ki
 
 % ahora comparo denominadores para obtener J, Bm, Km
 
@@ -316,4 +322,5 @@ plot(t, Va, '--g', 'LineWidth', 2);
 legend('Medido', 'Modelo físico', "TL", "Va");
 xlabel('Tiempo [s]');
 ylabel('\omega_r [rad/s]');
+title('Wr con Variables de estados y parametros calculados desde FdTs');
 grid on;
