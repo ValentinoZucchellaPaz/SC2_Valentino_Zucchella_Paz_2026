@@ -278,6 +278,12 @@ Laa=den_wr_vin(1)/J
 Ra=(den_wr_vin(2)-Bm*Laa)/J
 Km=(den_wr_vin(3)-Ra*Bm)/Ki
 
+% Ki = 6.6667
+% J = 2.0740
+% Bm = 0.3334
+% Laa = 0.6734
+% Ra = 0.7141
+% Km = 0.1143
 
 % no da buena respuesta
 % Ra=(num_wr_tl(3))/(-Ki)
