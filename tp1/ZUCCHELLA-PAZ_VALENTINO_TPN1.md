@@ -81,6 +81,24 @@ Se logró la consigna propuesta. Tanto para Wr calculado con las dinamicas (Chen
 
 ---
 
+# Ítem 6
+
+**Consigna:**
+Diseñar e implementar un controlador para regular la posición angular de un motor de corriente continua, considerando saturación de la señal de control y perturbaciones en el par de carga.
+
+**Implementación:**
+Se utilizó el modelo del motor obtenido previamente y se implementó un controlador PID en tiempo discreto mediante integración numérica por el método de Euler. Los parámetros del controlador fueron ajustados manualmente por prueba y error con el objetivo de obtener una respuesta estable, con bajo error en régimen y tiempo de establecimiento adecuado. Se incluyó la saturación de la tensión de armadura en el rango ±12 V y un esquema de anti-windup para evitar acumulación excesiva en la acción integral. La referencia de posición se fijó en ( \theta = 1 ) rad, y se introdujo una perturbación en forma de escalón a partir de ( t = 2 ) s para evaluar la robustez del controlador. Primero se simuló con un escalon a partir de 2s, luego el escalon es finito (2s a 5s) y se observa que se tiene error de regimen nulo.
+Se analizaron las variables de interés: posición angular, velocidad y señal de control.
+
+**Resultados:**
+
+Se logró la consigna propuesta.
+
+![Resultados6.1](images/item6_pid.png)
+![Resultados6.2](images/item6_pid_TL_escalon_finito.png)
+
+---
+
 # Conclusión
 
 El modelado en variables de estado y su implementación en herramientas computacionales permitió representar adecuadamente la dinámica de un sistema físico. A partir de datos experimentales, se logró identificar un modelo equivalente mediante el método de la respuesta al escalón y validar su comportamiento utilizando una variable distinta y en un intervalo temporal diferente, verificando la coherencia entre el modelo y el sistema real.

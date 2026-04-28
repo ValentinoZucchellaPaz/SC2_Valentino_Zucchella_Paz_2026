@@ -44,7 +44,7 @@ e_ant = 0;
 
 %% Torque de carga
 TL = zeros(1, N);
-TL(t >= 2.0) = 20;
+TL(t >= 2.0 & t<5) = 20;
 
 %% Loop
 for k = 2:N-1
@@ -70,19 +70,18 @@ for k = 2:N-1
 end
 
 %% Graficas
-step = 10000;
+step = 1000;
 figure;
 subplot(3,1,1);
-plot(t(1:step:end), theta(1:step:end), 'b'); yline(theta_ref, 'r--');
-xlabel('Tiempo [s]'); ylabel('\theta [rad]');
-title('Posicion angular'); grid on;
+plot(t(1:step:end), theta(1:step:end), 'b');
+ylabel('\theta [rad]');
+title("Motor DC con PID para mantener \theta = 1[rad] "); grid on;
 
 subplot(3,1,2);
-plot(t(1:step:end), va(1:step:end), 'm');
-xlabel('Tiempo [s]'); ylabel('Va [V]');
-title('Voltaje de control'); grid on;
+plot(t(1:step:end), va(1:step:end), 'm'); hold on;
+plot(t(1:step:end), TL(1:step:end), '--r');
+ylabel('Va [V]');
 
 subplot(3,1,3);
 plot(t(1:step:end), wr(1:step:end), 'g');
 xlabel('Tiempo [s]'); ylabel('\omega_r [rad/s]');
-title('Velocidad angular'); grid on;
