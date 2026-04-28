@@ -1,3 +1,5 @@
+[![Repositorio con códigos](https://img.shields.io/badge/Ir%20a%20repositorio%20con%20codigos-blue?logo=github)](https://github.com/ValentinoZucchellaPaz/SC2_Valentino_Zucchella_Paz_2026/tree/main/tp1)
+
 # Ítem 1
 
 **Consigna:**
