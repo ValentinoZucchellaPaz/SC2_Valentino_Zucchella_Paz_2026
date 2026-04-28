@@ -101,12 +101,6 @@ Se logró la consigna propuesta.
 
 ---
 
-# Conclusión
+# Conclusión y Lecciones aprendidas
 
-El modelado en variables de estado y su implementación en herramientas computacionales permitió representar adecuadamente la dinámica de un sistema físico. A partir de datos experimentales, se logró identificar un modelo equivalente mediante el método de la respuesta al escalón y validar su comportamiento utilizando una variable distinta y en un intervalo temporal diferente, verificando la coherencia entre el modelo y el sistema real.
-
----
-
-# Lecciones aprendidas
-
-Se consolidó la capacidad de representar sistemas físicos mediante variables de estado, identificar modelos dinámicos a partir de datos experimentales y analizar su comportamiento temporal. Se desarrolló criterio para seleccionar variables de estado, interpretar respuestas al escalón y validar modelos mediante comparación con mediciones reales, integrando herramientas analíticas y computacionales en el estudio de sistemas lineales.
+Se modelaron sistemas dinámicos eléctricos (RLC) y electromecánicos (motor de corriente continua) mediante variables de estado, integrando herramientas de simulación para analizar su comportamiento. A partir de datos experimentales, el método de Chen permitió obtener un modelo matemático representativo del sistema sin conocer previamente sus parámetros físicos y, a partir de este, estimar dichos parámetros. Sobre esta base, se validaron los modelos y se implementó un controlador PID discreto, incorporando efectos reales como la saturación y el anti-windup, logrando un comportamiento estable frente a perturbaciones. En conjunto, se consolidó el uso de variables de estado, la identificación de sistemas a partir de datos medidos y la implementación práctica de estrategias de control.
